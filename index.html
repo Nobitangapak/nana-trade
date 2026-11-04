@@ -2,6 +2,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>Nana Trading Lab — SIMULASI</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script type="importmap">{"imports":{"three":"./vendor/three.module.min.js"}}</script>
 <style>
 :root{--c:#00f0ff;--m:#ff2bd6;--g:#39ff88;--r:#ff4d6d;--bg:#05010f}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -46,10 +47,20 @@ canvas#eq{width:100%;height:150px;display:block}
 .op .t{display:flex;justify-content:space-between;font-size:14px;font-weight:800;margin-bottom:4px}
 .bar{height:6px;border-radius:3px;background:linear-gradient(90deg,#ff4d6d,#333 50%,#39ff88);position:relative;margin:8px 0 3px}
 .bar i{position:absolute;top:-4px;width:3px;height:14px;background:#fff;box-shadow:0 0 8px #fff;border-radius:2px;transition:left 1s}
+#av{position:relative;height:270px;margin:-4px 0 6px;border-radius:16px;overflow:hidden}
+#av canvas{width:100%!important;height:100%!important;display:block}
+#av .st{position:absolute;left:0;right:0;bottom:8px;text-align:center;font:700 12px ui-monospace,monospace;color:#9ff;text-shadow:0 0 8px #0ff;letter-spacing:1px}
+#av .nm{position:absolute;top:8px;left:12px;font:800 12px ui-monospace,monospace;color:#ff8bf0;text-shadow:0 0 8px #f0f}
+#av2d{display:none;position:absolute;inset:0;align-items:center;justify-content:center}
+#av.fb #av2d{display:flex}
+#av2d svg{width:150px;animation:fy 3s ease-in-out infinite;filter:drop-shadow(0 0 14px #0ff)}@keyframes fy{50%{transform:translateY(-10px)}}
+#av.dim{filter:saturate(.3) brightness(.6)} #av.win #av2d svg{animation:jp .5s 3}@keyframes jp{50%{transform:translateY(-30px)}}
+#av.loss #av2d svg{animation:sh .2s 6}@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+#scav{height:120px;margin-top:6px}#scav img{height:120px}
 .foot{font-size:10.5px;color:#789;text-align:center;line-height:1.5}
 /* share card */
 #share{display:none;position:fixed;inset:0;z-index:5;background:rgba(0,0,0,.85);align-items:center;justify-content:center;flex-direction:column}
-#sc{width:360px;height:450px;border-radius:22px;position:relative;overflow:hidden;padding:20px;
+#sc{width:360px;height:570px;border-radius:22px;position:relative;overflow:hidden;padding:20px;
  background:radial-gradient(circle at 50% 30%,#3b0a6b,#05010f 70%);border:2px solid var(--c);box-shadow:0 0 40px rgba(0,240,255,.5)}
 #sc .grid{position:absolute;height:45%;bottom:-8%}
 #sc .in{position:relative;z-index:2;text-align:center}
@@ -63,6 +74,7 @@ canvas#eq{width:100%;height:150px;display:block}
 <div class="paper"><div>⚠️ PAPER TRADING / SIMULASI — bukan uang asli</div></div>
 <header><h1>NANA·TRADE·LAB</h1><div class="clock"><span id="clk">--:--:--</span><small id="dt">WIB</small></div></header>
 <div class="tabs"><button data-p="all" class="on">Semua waktu</button><button data-p="24h">24 jam</button><button data-p="6h">6 jam</button></div>
+<section id="av"><div class="nm">NANA · AI TRADER</div><div id="av2d"><svg viewBox="0 0 100 130"><g fill="none" stroke="#00f0ff" stroke-width="3"><rect x="22" y="10" width="56" height="42" rx="12"/><circle cx="40" cy="31" r="6" fill="#00f0ff"/><circle cx="60" cy="31" r="6" fill="#00f0ff"/><line x1="50" y1="10" x2="50" y2="2"/><circle cx="50" cy="2" r="2" fill="#ff2bd6"/><rect x="28" y="58" width="44" height="40" rx="8" stroke="#ff2bd6"/><line x1="28" y1="66" x2="12" y2="86"/><line x1="72" y1="66" x2="88" y2="86"/><line x1="40" y1="98" x2="38" y2="124"/><line x1="60" y1="98" x2="62" y2="124"/></g></svg></div><div class="st" id="avst">Memuat avatar…</div></section>
 <section class="card hero" id="hero"><div class="lbl">Total PnL (simulasi)</div><div class="big" id="pnl">…</div>
 <div class="row"><div><span class="lbl">Winrate</span><b id="wr">–</b></div><div><span class="lbl">Trade selesai</span><b id="cl">–</b></div><div><span class="lbl">Posisi terbuka</span><b id="op">–</b></div></div></section>
 <section class="card"><div class="lbl" style="margin-bottom:6px">Kurva ekuitas — PnL kumulatif (SOL)</div><canvas id="eq"></canvas></section>
@@ -70,18 +82,22 @@ canvas#eq{width:100%;height:150px;display:block}
 <section class="strat" id="strat"></section>
 <section class="card"><div class="lbl" style="margin-bottom:4px">Trade terbaru</div><div class="feed" id="feed"></div></section>
 <button class="btn" id="shareBtn">📸 Kartu untuk dibagikan</button>
-<p class="foot" style="margin-top:12px">Semua angka diambil langsung dari ledger bot, termasuk kerugian, sudah termasuk fee & slippage simulasi. Bukan saran finansial.<br>Update terakhir: <span id="upd">–</span> WIB · refresh tiap 10 dtk</p>
+<p class="foot" style="margin-top:12px">Avatar 3D: RobotExpressive oleh Tomás Laulhé (Quaternius), CC0 1.0 · three.js (MIT).<br>Semua angka diambil langsung dari ledger bot, termasuk kerugian, sudah termasuk fee & slippage simulasi. Bukan saran finansial.<br>Update terakhir: <span id="upd">–</span> WIB · refresh tiap 10 dtk</p>
 </main>
 <div id="share" onclick="if(event.target.id=='share')this.style.display='none'"><div id="sc"><div class="grid"></div><div class="in">
 <h1 style="font-size:22px">NANA·TRADE·LAB</h1><div class="lbl" id="scd" style="margin-top:4px"></div>
 <div class="tag">PAPER TRADING / SIMULASI — bukan uang asli</div>
 <div class="lbl" style="margin-top:14px">Total PnL · Semua waktu</div><div class="big" id="scp"></div>
-<div class="lbl" id="scw"></div><table id="sct"></table>
+<div id="scav"></div><div class="lbl" id="scw"></div><table id="sct"></table>
 <div class="foot" style="margin-top:12px">Angka asli dari ledger simulasi, termasuk kerugian.<br>Solana · pump.fun · @Nobtrade07bot</div></div></div>
 <p class="foot" style="margin-top:10px;color:#bbb">Screenshot kartu ini untuk dibagikan · ketuk luar untuk tutup</p></div>
 <script>
 const tg=window.Telegram&&Telegram.WebApp; if(tg){tg.ready();tg.expand();try{tg.setHeaderColor('#05010f');tg.setBackgroundColor('#05010f')}catch(e){}}
-const $=id=>document.getElementById(id); let period='all',last=null,seen=new Set(),first=true,allData=null;
+const $=id=>document.getElementById(id);
+let NANA=null;const avb=()=>$('av');function fb(){avb().classList.add('fb');NANA=null}
+function avState(c,t){const a=avb();a.classList.remove('win','loss');if(c){void a.offsetWidth;a.classList.add(c)}$('avst').textContent=t}
+setTimeout(()=>import('./vendor/nana.js').then(m=>{NANA=m.start(avb(),fb);}).catch(fb),300);
+ let period='all',last=null,seen=new Set(),first=true,allData=null;
 const fmtT=t=>new Date(t*1000).toLocaleTimeString('id-ID',{timeZone:'Asia/Jakarta',hour:'2-digit',minute:'2-digit'});
 function clock(){const d=new Date();$('clk').textContent=d.toLocaleTimeString('id-ID',{timeZone:'Asia/Jakarta',hour12:false});
  $('dt').textContent=d.toLocaleDateString('id-ID',{timeZone:'Asia/Jakarta',weekday:'short',day:'numeric',month:'short'})+' · WIB'}
@@ -114,12 +130,19 @@ function render(d){const T=d.total;$('pnl').className='big '+sign(T.pnl_sol);ani
  const f=$('feed');f.innerHTML=d.recent.length?d.recent.map(r=>{const id=r.t+r.symbol+r.strategy,nw=!first&&!seen.has(id);seen.add(id);
   return `<div class="${nw?'new':''}"><span>${fmtT(r.t)} ${r.strategy}</span><span>${r.symbol.replace(/</g,'')}</span><span class="${r.win?'pos':'neg'}">${r.pnl_sol>0?'+':''}${r.pnl_sol.toFixed(4)}</span></div>`}).join(''):'<div>Belum ada trade di periode ini</div>';
  if(last!=null&&T.closed!==last){$('hero').classList.remove('pulse');void $('hero').offsetWidth;$('hero').classList.add('pulse');tg&&tg.HapticFeedback&&tg.HapticFeedback.notificationOccurred('success')}
+ const alive=Object.values(d.health).some(h=>h.alive);avb().classList.toggle('dim',!alive);NANA&&NANA.health(alive);
+ if(period==='all'&&!first){const nw=d.recent.filter(r=>!window._prevIds||!window._prevIds.has(r.t+r.symbol+r.strategy));
+  if(window._prevIds&&nw.length){const w=nw.some(r=>r.win);if(w){NANA&&NANA.win();avState('win','Trade menang ditutup ✔ (simulasi)')}else{NANA&&NANA.loss();avState('loss','Trade rugi ditutup — evaluasi (simulasi)')}
+   setTimeout(()=>avState('',alive?'Memindai pump.fun…':'Bot tidak sehat — cek proses'),6000)}}
+ if(period==='all'){window._prevIds=new Set(d.recent.map(r=>r.t+r.symbol+r.strategy))}
+ if(!avb().classList.contains('win')&&!avb().classList.contains('loss'))$('avst').textContent=alive?`Memindai pump.fun… ${(d.open_positions||[]).length} posisi terbuka`:'Bot tidak sehat — cek proses';
  last=T.closed;first=false;$('upd').textContent=new Date(d.generated*1000).toLocaleTimeString('id-ID',{timeZone:'Asia/Jakarta',hour12:false})}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');period=b.dataset.p;last=null;load()});
 function share(){const d=allData;if(!d)return;const T=d.total;$('scp').textContent=(T.pnl_sol>0?'+':'')+T.pnl_sol.toFixed(4)+' SOL';$('scp').className='big '+sign(T.pnl_sol);
  $('scw').textContent=`Winrate ${T.winrate??'–'}% · ${T.wins} menang / ${T.closed-T.wins} kalah · ${T.closed} trade`;
  $('scd').textContent=new Date().toLocaleString('id-ID',{timeZone:'Asia/Jakarta',dateStyle:'medium',timeStyle:'short'})+' WIB';
  $('sct').innerHTML=Object.values(d.strategies).map(s=>`<tr><td>${s.name}</td><td>${s.closed} tr · WR ${s.winrate??'–'}%</td><td class="${sign(s.pnl_sol)}">${s.pnl_sol>0?'+':''}${s.pnl_sol.toFixed(4)}</td></tr>`).join('');
+ $('scav').innerHTML=NANA?`<img src="${NANA.snap()}">`:avb().querySelector('svg').outerHTML.replace('<svg','<svg style="height:110px"');
  $('share').style.display='flex'}
 $('shareBtn').onclick=()=>{if(!allData)fetch('data_all.json?'+Date.now()).then(r=>r.json()).then(d=>{allData=d;share()});else share()};
 if(location.hash=='#share')setTimeout(()=>$('shareBtn').click(),1500);
