@@ -1,0 +1,130 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Nana Trading Lab — SIMULASI</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--c:#00f0ff;--m:#ff2bd6;--g:#39ff88;--r:#ff4d6d;--bg:#05010f}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:#e8f6ff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:hidden;min-height:100vh}
+#bg{position:fixed;inset:0;z-index:0}
+.grid{position:fixed;left:-50%;right:-50%;bottom:-10%;height:55vh;z-index:0;
+ background-image:linear-gradient(rgba(255,43,214,.55) 1px,transparent 1px),linear-gradient(90deg,rgba(0,240,255,.45) 1px,transparent 1px);
+ background-size:44px 44px;transform:perspective(320px) rotateX(62deg);animation:mv 2.2s linear infinite;
+ -webkit-mask-image:linear-gradient(to top,#000 30%,transparent);mask-image:linear-gradient(to top,#000 30%,transparent)}
+@keyframes mv{to{background-position:0 44px}}
+.sun{position:fixed;left:50%;top:38vh;width:240px;height:240px;margin-left:-120px;border-radius:50%;z-index:0;
+ background:radial-gradient(circle,#ff2bd6 0,#7a1fff 45%,transparent 70%);filter:blur(30px);opacity:.45;animation:pl 6s ease-in-out infinite}
+@keyframes pl{50%{opacity:.7;transform:scale(1.1)}}
+main{position:relative;z-index:1;padding:14px 14px 40px;max-width:520px;margin:auto}
+.paper{background:repeating-linear-gradient(45deg,#ffb800,#ffb800 10px,#1a1200 10px,#1a1200 20px);padding:2px;border-radius:10px;margin-bottom:12px}
+.paper div{background:#1a1200;color:#ffd34d;font-weight:800;font-size:12.5px;text-align:center;padding:7px;border-radius:8px;letter-spacing:.5px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+h1{font-size:19px;letter-spacing:2px;background:linear-gradient(90deg,var(--c),var(--m));-webkit-background-clip:text;color:transparent;text-shadow:0 0 18px rgba(0,240,255,.35)}
+.clock{font-family:ui-monospace,monospace;font-size:15px;color:var(--c);text-shadow:0 0 10px var(--c);text-align:right}
+.clock small{display:block;font-size:10px;color:#8aa}
+.card{background:rgba(10,6,30,.62);border:1px solid rgba(0,240,255,.28);border-radius:16px;padding:14px;margin-bottom:12px;
+ backdrop-filter:blur(8px);box-shadow:0 0 22px rgba(0,240,255,.12),inset 0 0 22px rgba(255,43,214,.06)}
+.hero{text-align:center}
+.lbl{font-size:11px;color:#9ab;letter-spacing:1.5px;text-transform:uppercase}
+.big{font-size:40px;font-weight:900;font-family:ui-monospace,monospace;margin:4px 0}
+.pos{color:var(--g);text-shadow:0 0 16px var(--g)} .neg{color:var(--r);text-shadow:0 0 16px var(--r)}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.row div b{display:block;font-size:20px;font-family:ui-monospace,monospace;color:#fff}
+.strat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.s{padding:12px}.s h3{font-size:13px;color:var(--c);margin-bottom:6px;display:flex;justify-content:space-between}
+.s .v{font-family:ui-monospace,monospace;font-size:18px;font-weight:800}.s p{font-size:11px;color:#9ab;margin-top:3px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--g);box-shadow:0 0 8px var(--g);animation:bl 1.4s infinite}
+.dot.off{background:var(--r);box-shadow:0 0 8px var(--r)} @keyframes bl{50%{opacity:.3}}
+canvas#eq{width:100%;height:150px;display:block}
+.feed div{display:flex;justify-content:space-between;font-size:12.5px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06);font-family:ui-monospace,monospace}
+.feed .new{animation:fl 1.8s}@keyframes fl{0%{background:rgba(0,240,255,.35)}100%{background:none}}
+.tabs{display:flex;gap:6px;margin-bottom:12px}.tabs button,.btn{flex:1;background:rgba(0,240,255,.08);border:1px solid rgba(0,240,255,.35);color:#cfe;border-radius:10px;padding:8px;font-size:12px}
+.tabs button.on{background:linear-gradient(90deg,rgba(0,240,255,.35),rgba(255,43,214,.35));color:#fff}
+.btn{display:block;width:100%;font-size:14px;font-weight:700;padding:12px;margin-top:6px;background:linear-gradient(90deg,#00b8d4,#c2189b);border:0;color:#fff}
+.pulse{animation:pu 1.2s}@keyframes pu{0%{box-shadow:0 0 0 0 rgba(57,255,136,.8)}100%{box-shadow:0 0 0 30px rgba(57,255,136,0)}}
+.op{border:1px solid rgba(255,43,214,.3);border-radius:12px;padding:10px;margin-bottom:8px;font-size:12px;font-family:ui-monospace,monospace}
+.op .t{display:flex;justify-content:space-between;font-size:14px;font-weight:800;margin-bottom:4px}
+.bar{height:6px;border-radius:3px;background:linear-gradient(90deg,#ff4d6d,#333 50%,#39ff88);position:relative;margin:8px 0 3px}
+.bar i{position:absolute;top:-4px;width:3px;height:14px;background:#fff;box-shadow:0 0 8px #fff;border-radius:2px;transition:left 1s}
+.foot{font-size:10.5px;color:#789;text-align:center;line-height:1.5}
+/* share card */
+#share{display:none;position:fixed;inset:0;z-index:5;background:rgba(0,0,0,.85);align-items:center;justify-content:center;flex-direction:column}
+#sc{width:360px;height:450px;border-radius:22px;position:relative;overflow:hidden;padding:20px;
+ background:radial-gradient(circle at 50% 30%,#3b0a6b,#05010f 70%);border:2px solid var(--c);box-shadow:0 0 40px rgba(0,240,255,.5)}
+#sc .grid{position:absolute;height:45%;bottom:-8%}
+#sc .in{position:relative;z-index:2;text-align:center}
+#sc .tag{margin-top:10px;font-size:11px;font-weight:800;color:#1a1200;background:#ffb800;border-radius:6px;padding:5px}
+#sc .big{font-size:46px;margin-top:14px}
+#sc table{width:100%;margin-top:14px;font-size:12.5px;font-family:ui-monospace,monospace;border-collapse:collapse}
+#sc td{padding:4px 2px;border-bottom:1px solid rgba(255,255,255,.08)}#sc td:last-child{text-align:right}
+</style></head><body>
+<canvas id="bg"></canvas><div class="sun"></div><div class="grid"></div>
+<main>
+<div class="paper"><div>⚠️ PAPER TRADING / SIMULASI — bukan uang asli</div></div>
+<header><h1>NANA·TRADE·LAB</h1><div class="clock"><span id="clk">--:--:--</span><small id="dt">WIB</small></div></header>
+<div class="tabs"><button data-p="all" class="on">Semua waktu</button><button data-p="24h">24 jam</button><button data-p="6h">6 jam</button></div>
+<section class="card hero" id="hero"><div class="lbl">Total PnL (simulasi)</div><div class="big" id="pnl">…</div>
+<div class="row"><div><span class="lbl">Winrate</span><b id="wr">–</b></div><div><span class="lbl">Trade selesai</span><b id="cl">–</b></div><div><span class="lbl">Posisi terbuka</span><b id="op">–</b></div></div></section>
+<section class="card"><div class="lbl" style="margin-bottom:6px">Kurva ekuitas — PnL kumulatif (SOL)</div><canvas id="eq"></canvas></section>
+<section class="card"><div class="lbl" style="margin-bottom:6px"><span class="dot"></span> Posisi terbuka — live</div><div id="openp"></div></section>
+<section class="strat" id="strat"></section>
+<section class="card"><div class="lbl" style="margin-bottom:4px">Trade terbaru</div><div class="feed" id="feed"></div></section>
+<button class="btn" id="shareBtn">📸 Kartu untuk dibagikan</button>
+<p class="foot" style="margin-top:12px">Semua angka diambil langsung dari ledger bot, termasuk kerugian, sudah termasuk fee & slippage simulasi. Bukan saran finansial.<br>Update terakhir: <span id="upd">–</span> WIB · refresh tiap 10 dtk</p>
+</main>
+<div id="share" onclick="if(event.target.id=='share')this.style.display='none'"><div id="sc"><div class="grid"></div><div class="in">
+<h1 style="font-size:22px">NANA·TRADE·LAB</h1><div class="lbl" id="scd" style="margin-top:4px"></div>
+<div class="tag">PAPER TRADING / SIMULASI — bukan uang asli</div>
+<div class="lbl" style="margin-top:14px">Total PnL · Semua waktu</div><div class="big" id="scp"></div>
+<div class="lbl" id="scw"></div><table id="sct"></table>
+<div class="foot" style="margin-top:12px">Angka asli dari ledger simulasi, termasuk kerugian.<br>Solana · pump.fun · @Nobtrade07bot</div></div></div>
+<p class="foot" style="margin-top:10px;color:#bbb">Screenshot kartu ini untuk dibagikan · ketuk luar untuk tutup</p></div>
+<script>
+const tg=window.Telegram&&Telegram.WebApp; if(tg){tg.ready();tg.expand();try{tg.setHeaderColor('#05010f');tg.setBackgroundColor('#05010f')}catch(e){}}
+const $=id=>document.getElementById(id); let period='all',last=null,seen=new Set(),first=true,allData=null;
+const fmtT=t=>new Date(t*1000).toLocaleTimeString('id-ID',{timeZone:'Asia/Jakarta',hour:'2-digit',minute:'2-digit'});
+function clock(){const d=new Date();$('clk').textContent=d.toLocaleTimeString('id-ID',{timeZone:'Asia/Jakarta',hour12:false});
+ $('dt').textContent=d.toLocaleDateString('id-ID',{timeZone:'Asia/Jakarta',weekday:'short',day:'numeric',month:'short'})+' · WIB'}
+setInterval(clock,1000);clock();
+const cur={};function anim(el,to,dec,suf=''){const k=el.id||el.dataset.k;const from=cur[k]??0;cur[k]=to;const t0=performance.now();
+ (function f(n){const p=Math.min(1,(n-t0)/900),e=1-Math.pow(1-p,3),v=from+(to-from)*e;el.textContent=(v>0&&suf==' SOL'?'+':'')+v.toFixed(dec)+suf;if(p<1)requestAnimationFrame(f)})(t0)}
+const sign=v=>v>0?'pos':v<0?'neg':'';
+function drawEq(c){const cv=$('eq'),r=devicePixelRatio||1,W=cv.clientWidth,H=150;cv.width=W*r;cv.height=H*r;const x=cv.getContext('2d');x.scale(r,r);
+ if(!c.length){x.fillStyle='#789';x.font='12px monospace';x.fillText('Belum ada trade selesai',10,75);return}
+ const pts=[[c[0][0]-60,0],...c],ys=pts.map(p=>p[1]),mn=Math.min(0,...ys),mx=Math.max(0,...ys),t0=pts[0][0],t1=pts[pts.length-1][0]||t0+1;
+ const X=t=>8+(W-16)*(t-t0)/Math.max(1,t1-t0),Y=v=>10+(H-24)*(mx-v)/Math.max(1e-9,mx-mn);
+ x.strokeStyle='rgba(255,255,255,.25)';x.setLineDash([4,4]);x.beginPath();x.moveTo(0,Y(0));x.lineTo(W,Y(0));x.stroke();x.setLineDash([]);
+ const end=pts[pts.length-1][1],col=end>=0?'#39ff88':'#ff4d6d';const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,col+'88');g.addColorStop(1,col+'00');
+ x.beginPath();pts.forEach((p,i)=>i?x.lineTo(X(p[0]),Y(p[1])):x.moveTo(X(p[0]),Y(p[1])));x.lineTo(X(t1),Y(0));x.lineTo(X(t0),Y(0));x.fillStyle=g;x.fill();
+ x.beginPath();pts.forEach((p,i)=>i?x.lineTo(X(p[0]),Y(p[1])):x.moveTo(X(p[0]),Y(p[1])));x.strokeStyle=col;x.lineWidth=2.2;x.shadowColor=col;x.shadowBlur=12;x.stroke();
+ x.shadowBlur=0;x.fillStyle='#9ab';x.font='10px monospace';x.fillText(mx.toFixed(3),W-46,12);x.fillText(mn.toFixed(3),W-46,H-4);x.fillText(fmtT(t0),4,H-4)}
+async function load(){try{const d=await (await fetch('data_'+period+'.json?'+Date.now(),{cache:'no-store'})).json();render(d);if(period=='all')allData=d}catch(e){$('upd').textContent='gagal memuat'}}
+function render(d){const T=d.total;$('pnl').className='big '+sign(T.pnl_sol);anim($('pnl'),T.pnl_sol,4,' SOL');
+ $('wr').textContent=T.winrate==null?'–':T.winrate.toFixed(1)+'%';$('wr').style.color=T.winrate>=60?'#39ff88':T.winrate!=null?'#ff9db0':'#fff';
+ anim($('cl'),T.closed,0);anim($('op'),T.open,0);
+ $('strat').innerHTML=Object.entries(d.strategies).map(([k,s])=>{const h=d.health[k];return `<div class="card s"><h3>${s.name}<span class="dot ${h.alive?'':'off'}" title="heartbeat ${h.heartbeat_age_s}s"></span></h3>
+ <div class="v ${sign(s.pnl_sol)}">${s.pnl_sol>0?'+':''}${s.pnl_sol.toFixed(4)} SOL</div><p>WR ${s.winrate==null?'–':s.winrate+'%'} · ${s.wins}M/${s.losses}K · ${s.closed} selesai</p><p>${s.open} terbuka · ${h.alive?'aktif':'MATI'} (${h.heartbeat_age_s}s)</p></div>`}).join('');
+ drawEq(d.equity);
+ const fp=v=>v>=1e-3?v.toPrecision(5):v.toExponential(3),hd=s=>s==null?'–':s<3600?Math.floor(s/60)+'m '+(s%60)+'s':Math.floor(s/3600)+'j '+Math.floor(s%3600/60)+'m';
+ $('openp').innerHTML=(d.open_positions||[]).length?d.open_positions.map(p=>{const pos=p.change_pct==null?50:Math.max(0,Math.min(100,(p.change_pct-p.sl_pct)/(p.tp_pct-p.sl_pct)*100));
+ return `<div class="op"><div class="t"><span>${p.symbol.replace(/</g,'')} <small style="color:#9ab">${p.strategy}</small></span><span class="${sign(p.change_pct)}">${p.change_pct==null?'–':(p.change_pct>0?'+':'')+p.change_pct+'%'}</span></div>
+ <div>Entry ${fp(p.entry)} → Kini ${p.current==null?'–':fp(p.current)} ${p.unit} · ${p.cost_sol} SOL</div><div class="bar"><i style="left:${pos}%"></i></div>
+ <div style="display:flex;justify-content:space-between;color:#9ab"><span>SL ${p.sl_pct}% (jarak ${p.to_sl_pct??'–'}%)</span><span>⏱ ${hd(p.held_s)}</span><span>TP +${p.tp_pct}% (${p.to_tp_pct??'–'}%)</span></div>
+ <div style="color:#678;font-size:10px;margin-top:3px">harga: ${p.price_src} · % kotor sebelum fee/slippage jual</div></div>`}).join(''):'<div style="color:#789;font-size:12px">Tidak ada posisi terbuka</div>';
+ const f=$('feed');f.innerHTML=d.recent.length?d.recent.map(r=>{const id=r.t+r.symbol+r.strategy,nw=!first&&!seen.has(id);seen.add(id);
+  return `<div class="${nw?'new':''}"><span>${fmtT(r.t)} ${r.strategy}</span><span>${r.symbol.replace(/</g,'')}</span><span class="${r.win?'pos':'neg'}">${r.pnl_sol>0?'+':''}${r.pnl_sol.toFixed(4)}</span></div>`}).join(''):'<div>Belum ada trade di periode ini</div>';
+ if(last!=null&&T.closed!==last){$('hero').classList.remove('pulse');void $('hero').offsetWidth;$('hero').classList.add('pulse');tg&&tg.HapticFeedback&&tg.HapticFeedback.notificationOccurred('success')}
+ last=T.closed;first=false;$('upd').textContent=new Date(d.generated*1000).toLocaleTimeString('id-ID',{timeZone:'Asia/Jakarta',hour12:false})}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');period=b.dataset.p;last=null;load()});
+function share(){const d=allData;if(!d)return;const T=d.total;$('scp').textContent=(T.pnl_sol>0?'+':'')+T.pnl_sol.toFixed(4)+' SOL';$('scp').className='big '+sign(T.pnl_sol);
+ $('scw').textContent=`Winrate ${T.winrate??'–'}% · ${T.wins} menang / ${T.closed-T.wins} kalah · ${T.closed} trade`;
+ $('scd').textContent=new Date().toLocaleString('id-ID',{timeZone:'Asia/Jakarta',dateStyle:'medium',timeStyle:'short'})+' WIB';
+ $('sct').innerHTML=Object.values(d.strategies).map(s=>`<tr><td>${s.name}</td><td>${s.closed} tr · WR ${s.winrate??'–'}%</td><td class="${sign(s.pnl_sol)}">${s.pnl_sol>0?'+':''}${s.pnl_sol.toFixed(4)}</td></tr>`).join('');
+ $('share').style.display='flex'}
+$('shareBtn').onclick=()=>{if(!allData)fetch('data_all.json?'+Date.now()).then(r=>r.json()).then(d=>{allData=d;share()});else share()};
+if(location.hash=='#share')setTimeout(()=>$('shareBtn').click(),1500);
+load();setInterval(load,10000);setInterval(()=>{document.querySelectorAll('.op').length&&0},1000);
+// particles
+const bg=$('bg'),bx=bg.getContext('2d');let P=[];function rs(){bg.width=innerWidth;bg.height=innerHeight;P=Array.from({length:60},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,v:.2+Math.random()*.8,r:Math.random()*1.8+.3,c:Math.random()<.5?'#00f0ff':'#ff2bd6'}))}
+rs();addEventListener('resize',rs);(function loop(){bx.clearRect(0,0,bg.width,bg.height);for(const p of P){p.y-=p.v;if(p.y<0){p.y=bg.height;p.x=Math.random()*bg.width}bx.beginPath();bx.arc(p.x,p.y,p.r,0,7);bx.fillStyle=p.c;bx.shadowColor=p.c;bx.shadowBlur=8;bx.fill()}requestAnimationFrame(loop)})();
+</script></body></html>
