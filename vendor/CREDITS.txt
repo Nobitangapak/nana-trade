@@ -1,5 +1,7 @@
 Credits
-- 3D model RobotExpressive by Tomás Laulhé (Quaternius), CC0 1.0. Modifications by Don McCurdy. Source: three.js examples (r170).
-- three.js (MIT License, three.js authors).
+- 3D avatar "Nana": VRM1_Constraint_Twist_Sample (c) 2022 pixiv Inc., VRM Public License 1.0 (https://vrm.dev/licenses/1.0/): avatarPermission=everyone, commercialUsage=corporation, allowRedistribution=true, modification=allowModificationRedistribution, creditNotation=unnecessary (credited anyway). Source: github.com/pixiv/three-vrm examples.
+- @pixiv/three-vrm 3.5.5 (MIT, pixiv Inc.).
+- three.js r170 (MIT, three.js authors).
+- Previous robot model RobotExpressive by Tomás Laulhé (Quaternius), CC0 1.0 (no longer used).
 
 All stats are PAPER TRADING / SIMULASI, not real money.
