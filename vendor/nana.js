@@ -1,56 +1,54 @@
-// Nana anime VRM avatar. Model: VRM1_Constraint_Twist_Sample (c) 2022 pixiv Inc., VRM Public License 1.0 (redistribution & modification allowed).
-import * as THREE from 'three';
-import {GLTFLoader} from './GLTFLoader.js';
-import {VRMLoaderPlugin,VRMUtils} from './three-vrm.module.min.js';
+// Nana 2.5D trader avatar (generated anime art) + decorative animated candlestick background. No external libs.
 export function start(box,onFail){
-  let R; try{R=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true})}catch(e){onFail();return null}
-  if(!R.getContext()){onFail();return null}
-  R.setPixelRatio(Math.min(devicePixelRatio||1,1.5)); const W=()=>box.clientWidth,H=()=>box.clientHeight; R.setSize(W(),H()); box.appendChild(R.domElement);
-  const S=new THREE.Scene(),C=new THREE.PerspectiveCamera(28,W()/H(),.1,50); C.position.set(0,1.0,3.9); C.lookAt(0,.82,0);
-  S.add(new THREE.AmbientLight(0xffffff,.9)); const D=new THREE.DirectionalLight(0xffffff,1.6); D.position.set(1,2,3); S.add(D);
-  const rimA=new THREE.DirectionalLight(0xff2bd6,1.4); rimA.position.set(-2,1.5,-2); const rimB=new THREE.DirectionalLight(0x00f0ff,1.4); rimB.position.set(2,1.5,-2); S.add(rimA,rimB);
-  const grid=new THREE.GridHelper(20,40,0xff2bd6,0x00f0ff); grid.material.transparent=true; grid.material.opacity=.35; S.add(grid);
-  const ring=new THREE.Mesh(new THREE.RingGeometry(.45,.5,64),new THREE.MeshBasicMaterial({color:0x00f0ff,transparent:true,opacity:.8,side:2})); ring.rotation.x=-Math.PI/2; ring.position.y=.01; S.add(ring);
-  const scan=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,.02,48,1,true),new THREE.MeshBasicMaterial({color:0x00f0ff,transparent:true,opacity:.3,side:2,blending:THREE.AdditiveBlending,depthWrite:false})); S.add(scan);
-  const N=220,g=new THREE.BufferGeometry(),pp=new Float32Array(N*3); for(let i=0;i<N;i++){pp[i*3]=(Math.random()-.5)*5;pp[i*3+1]=Math.random()*2.6;pp[i*3+2]=(Math.random()-.5)*3-0.5}
-  g.setAttribute('position',new THREE.BufferAttribute(pp,3)); const parts=new THREE.Points(g,new THREE.PointsMaterial({color:0xff8bf0,size:.018,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false})); S.add(parts);
-  const look=new THREE.Object3D(); look.position.set(0,1.3,3); S.add(look);
-  let vrm=null,mode='idle',mt=0,dim=false,scanning=true,glow=0,glowCol=0x39ff88,nextBlink=2,blinkT=-1,lookT=0,lookTarget=new THREE.Vector3(0,1.3,3),pointerT=-10;
-  const L=new GLTFLoader(); L.register(p=>new VRMLoaderPlugin(p));
-  L.load('vendor/nana.vrm',gl=>{vrm=gl.userData.vrm; VRMUtils.removeUnnecessaryVertices(gl.scene); VRMUtils.combineSkeletons&&VRMUtils.combineSkeletons(gl.scene);
-    VRMUtils.rotateVRM0(vrm); vrm.scene.traverse(o=>{o.frustumCulled=false}); S.add(vrm.scene); vrm.lookAt&&(vrm.lookAt.target=look); box.classList.add('ready')},undefined,e=>{console.warn('vrm',e);onFail()});
-  box.addEventListener('pointermove',e=>{const r=box.getBoundingClientRect();lookTarget.set(((e.clientX-r.left)/r.width-.5)*3,1.3-((e.clientY-r.top)/r.height-.5)*2,3);pointerT=clock.elapsedTime});
-  box.addEventListener('pointerdown',e=>box.dispatchEvent(new PointerEvent('pointermove',e)));
-  const clock=new THREE.Clock(); let vis=!document.hidden; document.addEventListener('visibilitychange',()=>{vis=!document.hidden;if(vis)clock.getDelta()});
-  addEventListener('resize',()=>{R.setSize(W(),H());C.aspect=W()/H();C.updateProjectionMatrix()});
-  const B=n=>vrm&&vrm.humanoid.getNormalizedBoneNode(n);
-  function ex(n,v){vrm&&vrm.expressionManager&&vrm.expressionManager.setValue(n,v)}
-  (function loop(){requestAnimationFrame(loop); if(!vis)return; const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime; mt+=dt;
-    if(mode!=='idle'&&mt>3.2)mode='idle';
-    glow=Math.max(0,glow-dt*.6); ring.material.color.setHex(glow>0?glowCol:0x00f0ff); ring.material.opacity=dim?.15:.45+Math.sin(t*2)*.25+glow; ring.scale.setScalar(1+glow*.8);
-    scan.visible=scanning&&!dim; scan.position.y=((t*.5)%1)*1.6;
-    const a=g.attributes.position.array; for(let i=1;i<a.length;i+=3){a[i]+=dt*.2;if(a[i]>2.6)a[i]=0} g.attributes.position.needsUpdate=true;
-    if(vrm){const br=Math.sin(t*2.1);
-      // base pose: arms down, natural
-      B('leftUpperArm').rotation.set(0,0,-1.2-br*.02); B('rightUpperArm').rotation.set(0,0,1.2+br*.02);
-      B('leftLowerArm').rotation.set(0,0,-.15); B('rightLowerArm').rotation.set(0,0,.15);
-      B('spine').rotation.set(br*.015,0,Math.sin(t*.7)*.025); B('chest')&&B('chest').rotation.set(br*.02,0,0);
-      vrm.scene.position.y=0; vrm.scene.rotation.y=Math.sin(t*.35)*.25;
-      const hd=B('head'); hd.rotation.set(Math.sin(t*.9)*.03,Math.sin(t*.5)*.12,Math.sin(t*.6)*.04);
-      let happy=0,sad=0,relaxed=0,sleepy=0;
-      if(mode==='win'){happy=1; const j=Math.max(0,Math.sin(mt*7)); if(mt<1.4)vrm.scene.position.y=j*.12;
-        B('rightUpperArm').rotation.set(0,0,-1.0-Math.sin(mt*10)*.25); B('rightLowerArm').rotation.set(0,0,-1.0-Math.sin(mt*10)*.2)}
-      else if(mode==='loss'){sad=1; hd.rotation.y=Math.sin(mt*9)*.25*Math.max(0,1-mt/2); hd.rotation.x=.15}
-      else if(dim){sleepy=1; hd.rotation.x=.25+Math.sin(t*.6)*.05; B('spine').rotation.x=.1}
-      else if(scanning){relaxed=.35}
-      ex('happy',happy); ex('sad',sad); ex('relaxed',relaxed); ex('neutral',happy||sad?0:.3);
-      // blink
-      nextBlink-=dt; if(nextBlink<0){blinkT=0;nextBlink=2+Math.random()*3} let bl=sleepy?.6:0; if(blinkT>=0){blinkT+=dt;bl=Math.max(bl,Math.sin(Math.min(1,blinkT/.16)*Math.PI));if(blinkT>.16)blinkT=-1}
-      if(happy)bl=Math.max(bl,.0); ex('blink',bl);
-      // look-around
-      lookT-=dt; if(t-pointerT>3&&lookT<0){lookTarget.set((Math.random()-.5)*2.2,1.1+Math.random()*.5,3);lookT=1.5+Math.random()*2.5}
-      look.position.lerp(lookTarget,Math.min(1,dt*3));
-      vrm.update(dt)}
-    R.render(S,C)})();
-  return {win(){mode='win';mt=0;glow=1;glowCol=0x39ff88},loss(){mode='loss';mt=0;glow=.7;glowCol=0xff4d6d},health(al){dim=!al;scanning=al},snap(){return R.domElement.toDataURL('image/png')}};
+  const POSES={neutral:'vendor/char_neutral.webp',happy:'vendor/char_happy.webp',sad:'vendor/char_sad.webp'};
+  const cv=document.createElement('canvas'); cv.className='cbg'; box.prepend(cv); const x=cv.getContext('2d');
+  const tag=document.createElement('div'); tag.className='deco'; tag.textContent='grafik dekoratif · bukan PnL'; box.appendChild(tag);
+  const rig=document.createElement('div'); rig.className='rig'; box.appendChild(rig);
+  const imgs={}; let loaded=0,failed=false;
+  for(const [k,src] of Object.entries(POSES)){const im=new Image(); im.src=src; im.className='pose'+(k==='neutral'?' on':''); im.draggable=false;
+    im.onload=()=>{if(++loaded===3)box.classList.add('ready')}; im.onerror=()=>{if(!failed){failed=true;onFail()}}; rig.appendChild(im); imgs[k]=im}
+  const glint=document.createElement('div'); glint.className='glint'; rig.appendChild(glint);
+  let pose='neutral',until=0,dim=false,glow=0,glowCol='0,240,255',tx=0,ty=0,ptx=0,pty=0;
+  function setPose(p){pose=p; for(const k in imgs)imgs[k].classList.toggle('on',k===p)}
+  box.addEventListener('pointermove',e=>{const r=box.getBoundingClientRect();ptx=((e.clientX-r.left)/r.width-.5)*2;pty=((e.clientY-r.top)/r.height-.5)*2});
+  box.addEventListener('pointerleave',()=>{ptx=pty=0});
+  addEventListener('deviceorientation',e=>{if(e.gamma!=null){ptx=Math.max(-1,Math.min(1,e.gamma/30));pty=Math.max(-1,Math.min(1,(e.beta-45)/30))}});
+  // decorative candle layers
+  const DPR=Math.min(devicePixelRatio||1,1.5); let W,H;
+  function rs(){W=box.clientWidth;H=box.clientHeight;cv.width=W*DPR;cv.height=H*DPR;x.setTransform(DPR,0,0,DPR,0,0)} rs(); addEventListener('resize',rs);
+  function mkLayer(w,gap,speed,alpha,amp,yb){let p=50,arr=[];const L={w,gap,speed,alpha,amp,yb,off:0,arr,
+    next(){const o=p,c=o+(Math.random()-.48)*amp,h=Math.max(o,c)+Math.random()*amp*.5,l=Math.min(o,c)-Math.random()*amp*.5;p=Math.max(15,Math.min(85,c));return{o,c,h,l,g:0}}};
+    for(let i=0;i<80;i++){const k=L.next();k.g=1;arr.push(k)} return L}
+  const layers=[mkLayer(5,4,10,.22,6,.35),mkLayer(8,5,18,.35,7,.5),mkLayer(12,7,30,.55,8,.62)];
+  let vis=!document.hidden; document.addEventListener('visibilitychange',()=>{vis=!document.hidden;last=performance.now()});
+  let last=performance.now(),t=0;
+  (function loop(n){requestAnimationFrame(loop); if(!vis)return; const dt=Math.min(.05,(n-last)/1000); last=n; t+=dt;
+    x.clearRect(0,0,W,H);
+    layers.forEach((L,li)=>{L.off+=L.speed*dt*(dim?.3:1); const step=L.w+L.gap; while(L.off>=step){L.off-=step;L.arr.shift();L.arr.push(L.next())}
+      const cur=L.arr[L.arr.length-1]; cur.g=Math.min(1,cur.g+dt*.8);
+      const sc=H*.5/100, base=H*L.yb, px=(ptx*(li+1)*4);
+      for(let i=0;i<L.arr.length;i++){const k=L.arr[i],X=W-(L.arr.length-i)*step+L.off+px; if(X<-step)continue;
+        const c=k.o+(k.c-k.o)*k.g,up=c>=k.o,col=up?'57,255,136':'255,77,109'; x.globalAlpha=L.alpha*(dim?.4:1);
+        x.strokeStyle=x.fillStyle=`rgb(${col})`; x.shadowColor=`rgb(${col})`; x.shadowBlur=li==2?8:0;
+        const Y=v=>base+(50-v)*sc*1.4; x.beginPath(); x.moveTo(X+L.w/2,Y(k.h)); x.lineTo(X+L.w/2,Y(k.l)); x.lineWidth=1; x.stroke();
+        const y1=Y(Math.max(k.o,c)),y2=Y(Math.min(k.o,c)); x.fillRect(X,y1,L.w,Math.max(1.5,y2-y1))}});
+    x.globalAlpha=1; x.shadowBlur=0;
+    // character life
+    tx+=(ptx-tx)*Math.min(1,dt*4); ty+=(pty-ty)*Math.min(1,dt*4);
+    if(pose!=='neutral'&&performance.now()>until)setPose('neutral');
+    const br=Math.sin(t*2.2), bob=Math.sin(t*1.1)*3, typ=pose==='neutral'?Math.sin(t*18)*.4*(Math.sin(t*.7)>.3?1:0):0;
+    let jump=0; if(pose==='happy'){const k=(until-performance.now())/1000; jump=Math.max(0,Math.sin(t*9))*10*Math.min(1,k)}
+    const shake=pose==='sad'?Math.sin(t*14)*3*Math.max(0,(until-performance.now())/4000):0;
+    const slump=dim?6:0;
+    rig.style.transform=`translate(${tx*8+shake}px,${bob-jump+slump+typ}px) rotateY(${tx*8}deg) rotateX(${-ty*5}deg) rotate(${Math.sin(t*.8)*.8}deg)`;
+    for(const k in imgs) imgs[k].style.transform=`scale(${1+br*.008},${1+br*.014})`;
+    glow=Math.max(0,glow-dt*.5); const g=dim?.1:.35+glow; rig.style.filter=`drop-shadow(0 0 ${8+glow*22}px rgba(${glow>0?glowCol:'0,240,255'},${g})) drop-shadow(-4px 0 6px rgba(255,43,214,.35))${dim?' brightness(.55) saturate(.5)':''}`;
+  })(last);
+  return {
+    win(){setPose('happy');until=performance.now()+4000;glow=1;glowCol='57,255,136'},
+    loss(){setPose('sad');until=performance.now()+4000;glow=.8;glowCol='255,77,109'},
+    health(al){dim=!al;box.classList.toggle('sleepy',!al)},
+    snap(){const c=document.createElement('canvas'),w=W,h=H;c.width=w*2;c.height=h*2;const y=c.getContext('2d');y.scale(2,2);y.drawImage(cv,0,0,w,h);
+      const im=imgs[pose],ih=h*.98,iw=ih*im.naturalWidth/im.naturalHeight;y.shadowColor='rgba(0,240,255,.6)';y.shadowBlur=14;y.drawImage(im,(w-iw)/2,h-ih,iw,ih);return c.toDataURL('image/png')}
+  };
 }

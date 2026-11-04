@@ -1,7 +1,5 @@
 Credits
-- 3D avatar "Nana": VRM1_Constraint_Twist_Sample (c) 2022 pixiv Inc., VRM Public License 1.0 (https://vrm.dev/licenses/1.0/): avatarPermission=everyone, commercialUsage=corporation, allowRedistribution=true, modification=allowModificationRedistribution, creditNotation=unnecessary (credited anyway). Source: github.com/pixiv/three-vrm examples.
-- @pixiv/three-vrm 3.5.5 (MIT, pixiv Inc.).
-- three.js r170 (MIT, three.js authors).
-- Previous robot model RobotExpressive by Tomás Laulhé (Quaternius), CC0 1.0 (no longer used).
+- Avatar "Nana" (male trader): custom anime illustration generated with an AI image tool from the owner's own reference image; background removed with rembg (isnet-anime).
+- Candlestick background: procedurally generated, decorative only (not PnL).
 
 All stats are PAPER TRADING / SIMULASI, not real money.
