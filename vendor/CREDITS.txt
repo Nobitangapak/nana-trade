@@ -1,0 +1,5 @@
+Credits
+- 3D model RobotExpressive by Tomás Laulhé (Quaternius), CC0 1.0. Modifications by Don McCurdy. Source: three.js examples (r170).
+- three.js (MIT License, three.js authors).
+
+All stats are PAPER TRADING / SIMULASI, not real money.
